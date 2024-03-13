@@ -8,7 +8,7 @@
 
 `include "bsg_manycore_defines.vh"
 
-module bsg_manycore_pod_ruche
+module bsg_manycore_pod_ruche_backup
   import bsg_noc_pkg::*;
   import bsg_manycore_pkg::*;
   #(// number of tiles in a pod
@@ -333,25 +333,16 @@ module bsg_manycore_pod_ruche
         assign mc_ver_barrier_link_li[y][x][S] = '0;
       end
 
-      // Oliver: edits could be placed in either west/east if statement or outside because we only have 1 subarray. 
-      // Oliver: im splitting across both for semi-logical organization
-
-      // connect to west                                                                                        // oliver: as in connect to west pod
-      if (x == 0) begin                                                                                        // oliver: west subarrays (we only have 1)
+      // connect to west
+      if (x == 0) begin
         // local link
-        assign hor_link_sif_o[W][y*subarray_num_tiles_y_lp+:subarray_num_tiles_y_lp] = mc_hor_link_sif_lo[y][x][W];  // oliver: pod level mesh link, pod edge
-        //assign mc_hor_link_sif_li[y][x][W] = hor_link_sif_i[W][y*subarray_num_tiles_y_lp+:subarray_num_tiles_y_lp];  // oliver: subarray level mesh link; TODO
-        // Oliver code: to replace above line; make torus
-         assign mc_hor_link_sif_li[y][x][W] = mc_hor_link_sif_lo[y][x][E];
-
+        assign hor_link_sif_o[W][y*subarray_num_tiles_y_lp+:subarray_num_tiles_y_lp] = mc_hor_link_sif_lo[y][x][W];
+        assign mc_hor_link_sif_li[y][x][W] = hor_link_sif_i[W][y*subarray_num_tiles_y_lp+:subarray_num_tiles_y_lp];
         // ruche link
-        assign ruche_link_o[W][y*subarray_num_tiles_y_lp+:subarray_num_tiles_y_lp] = mc_ruche_link_lo[y][x][W];    // oliver: pod level ruche, pod edge
-        //assign mc_ruche_link_li[y][x][W] = ruche_link_i[W][y*subarray_num_tiles_y_lp+:subarray_num_tiles_y_lp];    // oliver: subarray level ruche; TODO
-        // Oliver code: to replace above line:
-        assign mc_ruche_link_li[y][x][W] = mc_ruche_link_lo[y][x][E]; // replace x with num_subarray_x_p - 1 to support multiple subarrays 
-
+        assign ruche_link_o[W][y*subarray_num_tiles_y_lp+:subarray_num_tiles_y_lp] = mc_ruche_link_lo[y][x][W];
+        assign mc_ruche_link_li[y][x][W] = ruche_link_i[W][y*subarray_num_tiles_y_lp+:subarray_num_tiles_y_lp];
         // hor barrier
-        assign hor_barrier_link_o[W][y*subarray_num_tiles_y_lp+:subarray_num_tiles_y_lp] = mc_hor_barrier_link_lo[y][x][W];  
+        assign hor_barrier_link_o[W][y*subarray_num_tiles_y_lp+:subarray_num_tiles_y_lp] = mc_hor_barrier_link_lo[y][x][W];
         assign mc_hor_barrier_link_li[y][x][W] = hor_barrier_link_i[W][y*subarray_num_tiles_y_lp+:subarray_num_tiles_y_lp];
         // barrier ruche
         assign barrier_ruche_link_o[W][y*subarray_num_tiles_y_lp+:subarray_num_tiles_y_lp] = mc_barrier_ruche_link_lo[y][x][W];
@@ -359,13 +350,13 @@ module bsg_manycore_pod_ruche
       end
 
       // connect hor links to the next col
-      if (x < num_subarray_x_p-1) begin                                                           //oliver: NEVER RUNS FOR 1 SUBARRAY [IGNORE]
+      if (x < num_subarray_x_p-1) begin
         // local
         assign mc_hor_link_sif_li[y][x+1][W] = mc_hor_link_sif_lo[y][x][E];
         assign mc_hor_link_sif_li[y][x][E] = mc_hor_link_sif_lo[y][x+1][W];
         // ruche
-        assign mc_ruche_link_li[y][x+1][W] = mc_ruche_link_lo[y][x][E];                      // oliver: take inspiration from this for above/below ifs
-        assign mc_ruche_link_li[y][x][E] = mc_ruche_link_lo[y][x+1][W];                      // oliver: take inspiration from this for above/below ifs
+        assign mc_ruche_link_li[y][x+1][W] = mc_ruche_link_lo[y][x][E];
+        assign mc_ruche_link_li[y][x][E] = mc_ruche_link_lo[y][x+1][W];
         // hor barrier
         assign mc_hor_barrier_link_li[y][x+1][W] = mc_hor_barrier_link_lo[y][x][E];
         assign mc_hor_barrier_link_li[y][x][E] = mc_hor_barrier_link_lo[y][x+1][W];
@@ -374,20 +365,14 @@ module bsg_manycore_pod_ruche
         assign mc_barrier_ruche_link_li[y][x][E] = mc_barrier_ruche_link_lo[y][x+1][W];
       end
 
-      // connect to east                                                                         // oliver: as in connect to east pod
+      // connect to east
       if (x == num_subarray_x_p-1) begin
         // local
         assign hor_link_sif_o[E][y*subarray_num_tiles_y_lp+:subarray_num_tiles_y_lp] = mc_hor_link_sif_lo[y][x][E];
-        //assign mc_hor_link_sif_li[y][x][E] = hor_link_sif_i[E][y*subarray_num_tiles_y_lp+:subarray_num_tiles_y_lp];
-        // Oliver code proposal to replace above line for torus conversion: 
-         assign mc_hor_link_sif_li[y][x][E] = mc_hor_link_sif_lo[y][x][W];
-
+        assign mc_hor_link_sif_li[y][x][E] = hor_link_sif_i[E][y*subarray_num_tiles_y_lp+:subarray_num_tiles_y_lp];
         // ruche
-        assign ruche_link_o[E][y*subarray_num_tiles_y_lp+:subarray_num_tiles_y_lp] = mc_ruche_link_lo[y][x][E];         // oliver: pod level; 
-        //assign mc_ruche_link_li[y][x][E] = ruche_link_i[E][y*subarray_num_tiles_y_lp+:subarray_num_tiles_y_lp];         // oliver: subarray level; TODO
-        // Oliver code to replace above line proposal:  //note this removes connecting to other pods
-         assign mc_ruche_link_li[y][x][E] = mc_ruche_link_lo[y][x][W]; // replace x with 0 to support multiple subarrays 
-
+        assign ruche_link_o[E][y*subarray_num_tiles_y_lp+:subarray_num_tiles_y_lp] = mc_ruche_link_lo[y][x][E];
+        assign mc_ruche_link_li[y][x][E] = ruche_link_i[E][y*subarray_num_tiles_y_lp+:subarray_num_tiles_y_lp];
         // hor barrier
         assign hor_barrier_link_o[E][y*subarray_num_tiles_y_lp+:subarray_num_tiles_y_lp] = mc_hor_barrier_link_lo[y][x][E];
         assign mc_hor_barrier_link_li[y][x][E] = hor_barrier_link_i[E][y*subarray_num_tiles_y_lp+:subarray_num_tiles_y_lp];

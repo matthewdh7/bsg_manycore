@@ -238,8 +238,13 @@ module bsg_manycore_tile_compute_array_ruche
     ,.ver_o(ver_link_sif_o)
   );
 
-  assign hor_link_sif_li[W] = hor_link_sif_i[W];
-  assign hor_link_sif_o[W] = hor_link_sif_lo[W];
+//   assign hor_link_sif_li[W] = hor_link_sif_i[W];
+//   assign hor_link_sif_o[W] = hor_link_sif_lo[W];
+
+  //MH: add torus links
+  //assign hor_link_sif_o[W] = hor_link_sif_lo[W];
+  assign hor_link_sif_li[W] = hor_link_sif_lo[E];
+  assign hor_link_sif_li[E] = hor_link_sif_lo[W];
   
   
   for (genvar r = 0; r < subarray_num_tiles_y_p; r++) begin: lr
@@ -251,13 +256,13 @@ module bsg_manycore_tile_compute_array_ruche
       ,.o(hor_link_sif_o[E][r])
     );
 
-    bsg_buf #(
-      .width_p(link_sif_width_lp)
-      ,.harden_p(1)
-    ) lb_w (
-      .i(hor_link_sif_i[E][r])
-      ,.o(hor_link_sif_li[E][r])
-    );
+    // bsg_buf #(
+    //   .width_p(link_sif_width_lp)
+    //   ,.harden_p(1)
+    // ) lb_w (
+    //   .i(hor_link_sif_i[E][r])
+    //   ,.o(hor_link_sif_li[E][r])
+    // );
   end
   
   // Ruche Connection Diagram:
@@ -269,25 +274,25 @@ module bsg_manycore_tile_compute_array_ruche
     for (genvar c = 0; c < subarray_num_tiles_x_p; c++) begin: rc
       for (genvar l = 0; l < ruche_factor_X_p; l++) begin: rl    // ruche stage
         if (c == subarray_num_tiles_x_p-1) begin: cl
-          bsg_ruche_buffer #(
-            .width_p(ruche_x_link_sif_width_lp)
-            ,.ruche_factor_p(ruche_factor_X_p)
-            ,.ruche_stage_p(l)
-            ,.harden_p(1)
-          ) rb_w (
-            .i(ruche_link_i[E][r][l])
-            ,.o(ruche_link_in[r][c][(l+ruche_factor_X_p-1) % ruche_factor_X_p][E])
-          );
+        //   bsg_ruche_buffer #(
+        //     .width_p(ruche_x_link_sif_width_lp)
+        //     ,.ruche_factor_p(ruche_factor_X_p)
+        //     ,.ruche_stage_p(l)
+        //     ,.harden_p(1)
+        //   ) rb_w (
+        //     .i(ruche_link_i[E][r][l])
+        //     ,.o(ruche_link_in[r][c][(l+ruche_factor_X_p-1) % ruche_factor_X_p][E])
+        //   );
 
-          bsg_ruche_buffer #(
-            .width_p(ruche_x_link_sif_width_lp)
-            ,.ruche_factor_p(ruche_factor_X_p)
-            ,.ruche_stage_p(l)
-            ,.harden_p(1)
-          ) rb_e (
-            .i(ruche_link_out[r][c][l][E])
-            ,.o(ruche_link_o[E][r][(l+1)%ruche_factor_X_p])
-          );
+        //   bsg_ruche_buffer #(
+        //     .width_p(ruche_x_link_sif_width_lp)
+        //     ,.ruche_factor_p(ruche_factor_X_p)
+        //     ,.ruche_stage_p(l)
+        //     ,.harden_p(1)
+        //   ) rb_e (
+        //     .i(ruche_link_out[r][c][l][E])
+        //     ,.o(ruche_link_o[E][r][(l+1)%ruche_factor_X_p])
+        //   );
         end
         else begin: cn
           bsg_ruche_buffer #(
@@ -319,8 +324,27 @@ module bsg_manycore_tile_compute_array_ruche
   for (genvar r = 0; r < subarray_num_tiles_y_p; r++) begin: er
     for (genvar l = 0; l < ruche_factor_X_p; l++) begin: el
       // west
-      assign ruche_link_o[W][r][l] = ruche_link_out[r][0][l][W];
-      assign ruche_link_in[r][0][l][W] = ruche_link_i[W][r][l];
+    //   assign ruche_link_o[W][r][l] = ruche_link_out[r][0][l][W];
+    //   assign ruche_link_in[r][0][l][W] = ruche_link_i[W][r][l];
+      bsg_ruche_buffer #(                               
+        .width_p(ruche_x_link_sif_width_lp)
+        ,.ruche_factor_p(ruche_factor_X_p)
+        ,.ruche_stage_p(l)
+        ,.harden_p(1)
+      ) rb_w (
+        .i(ruche_link_out[r][0][l][W])
+        ,.o(ruche_link_in[r][subarray_num_tiles_x_p-1][(l+ruche_factor_X_p-1) % ruche_factor_X_p][E])
+      );
+
+      bsg_ruche_buffer #(
+        .width_p(ruche_x_link_sif_width_lp)
+        ,.ruche_factor_p(ruche_factor_X_p)
+        ,.ruche_stage_p(l)
+        ,.harden_p(1)
+      ) rb_e (
+        .i(ruche_link_out[r][subarray_num_tiles_x_p-1][l][E])
+        ,.o(ruche_link_in[r][0][(l+1)%ruche_factor_X_p][W])
+      );
     end
   end
 

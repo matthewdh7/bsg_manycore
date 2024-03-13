@@ -805,41 +805,41 @@ module bsg_nonsynth_manycore_testbench
 
 
   // HOR TIEOFF (local link)
-  for (genvar i = W; i <= E; i++) begin
-    for (genvar j = 0; j < num_pods_y_p; j++) begin
-      for (genvar k = 0; k < num_tiles_y_p; k++) begin
-        bsg_manycore_link_sif_tieoff #(
-          .addr_width_p(addr_width_p)
-          ,.data_width_p(data_width_p)
-          ,.x_cord_width_p(x_cord_width_p)
-          ,.y_cord_width_p(y_cord_width_p)
-        ) hor_tieoff (
-          .clk_i(clk_i)
-          ,.reset_i(reset_r)
-          ,.link_sif_i(hor_link_sif_lo[i][j][k])
-          ,.link_sif_o(hor_link_sif_li[i][j][k])
-        );
-      end
-    end
-  end
+//   for (genvar i = W; i <= E; i++) begin
+//     for (genvar j = 0; j < num_pods_y_p; j++) begin
+//       for (genvar k = 0; k < num_tiles_y_p; k++) begin
+//         bsg_manycore_link_sif_tieoff #(
+//           .addr_width_p(addr_width_p)
+//           ,.data_width_p(data_width_p)
+//           ,.x_cord_width_p(x_cord_width_p)
+//           ,.y_cord_width_p(y_cord_width_p)
+//         ) hor_tieoff (
+//           .clk_i(clk_i)
+//           ,.reset_i(reset_r)
+//           ,.link_sif_i(hor_link_sif_lo[i][j][k])
+//           ,.link_sif_o(hor_link_sif_li[i][j][k])
+//         );
+//       end
+//     end
+//   end
 
 
   // RUCHE LINK TIEOFF (west)
-  for (genvar j = 0; j < num_pods_y_p; j++) begin
-    for (genvar k = 0; k < num_tiles_y_p; k++) begin
-      // if ruche factor is even, tieoff with '1
-      // if ruche factor is odd,  tieoff with '0
-      assign ruche_link_li[W][j][k] = (ruche_factor_X_p%2 == 0) ? '1 : '0;
-    end
-  end
+//   for (genvar j = 0; j < num_pods_y_p; j++) begin
+//     for (genvar k = 0; k < num_tiles_y_p; k++) begin
+//       // if ruche factor is even, tieoff with '1
+//       // if ruche factor is odd,  tieoff with '0
+//       assign ruche_link_li[W][j][k] = (ruche_factor_X_p%2 == 0) ? '1 : '0;
+//     end
+//   end
 
-  // RUCHE LINK TIEOFF (east)
-  for (genvar j = 0; j < num_pods_y_p; j++) begin
-    for (genvar k = 0; k < num_tiles_y_p; k++) begin
-      // always tieoff with '0;
-      assign ruche_link_li[E][j][k] = '0;
-    end
-  end
+//   // RUCHE LINK TIEOFF (east)
+//   for (genvar j = 0; j < num_pods_y_p; j++) begin
+//     for (genvar k = 0; k < num_tiles_y_p; k++) begin
+//       // always tieoff with '0;
+//       assign ruche_link_li[E][j][k] = '0;
+//     end
+//   end
   
 
 
